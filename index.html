@@ -18,12 +18,10 @@
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent;
-            /* 基本的に全要素でテキスト選択を抑制 */
             -webkit-user-select: none;
             user-select: none;
         }
 
-        /* 入力欄だけは文字を打てるように許可 */
         input { -webkit-user-select: text; user-select: text; }
 
         body {
@@ -48,7 +46,7 @@
         main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
 
         .preview-container {
-            background: #e0e0e0; width: 100%; aspect-ratio: 370 / 320;
+            background: #d0d0d0; width: 100%; aspect-ratio: 370 / 320;
             border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
             margin-bottom: 20px;
         }
@@ -80,10 +78,9 @@
         .footer-links a { color: var(--main); text-decoration: none; font-weight: bold; }
         .copyright { color: #999; }
 
-        /* Modal & Result Image */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
             flex-direction: column;
         }
         .modal-content { 
@@ -91,13 +88,7 @@
             max-width: 90%; text-align: center;
         }
         
-        #resultImg { 
-            width: 100%; max-width: 370px; border-radius: 5px; margin-bottom: 20px;
-            /* 画像の長押し保存を邪魔しない設定 */
-            -webkit-touch-callout: default; 
-            pointer-events: auto;
-        }
-
+        #resultImg { width: 100%; max-width: 370px; border-radius: 5px; margin-bottom: 20px; -webkit-touch-callout: default; }
         .hint { color: #fff; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
@@ -119,7 +110,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="OFFICIAL NOTED" maxlength="40">
+        <input type="text" id="enInput" placeholder="OFFICIAL MISSION" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -139,13 +130,13 @@
         <img id="resultImg" src="" alt="Stamp Result">
         <button class="gen-btn" onclick="closeModal('resultModal')">Close</button>
     </div>
-    <div class="hint">画像を長押しして保存してください</div>
+    <div class="hint">画像を長押しして「写真に追加」</div>
 </div>
 
 <div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>Privacy Policy</h3>
-        <p>No login. No tracking. No ads. Browser only.<br>Local processing.</p>
+        <p>No login. No tracking. No ads. Browser only.</p>
         <button class="gen-btn" onclick="closeModal('privacyModal')">Close</button>
     </div>
 </div>
@@ -161,53 +152,61 @@
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const rectW = 340;
-        const rectH = 220;
+        // デザインサイズ
+        const rectW = 320;
+        const rectH = 180;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
-        const radius = 15;
+        const radius = 30; // 丸みを強く
 
+        // 1. シャドウ（スタンプの厚み）
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.beginPath();
+        ctx.roundRect(x + 4, y + 4, rectW, rectH, radius);
+        ctx.fill();
+
+        // 2. メインプレート
         ctx.strokeStyle = '#333333';
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 10;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.roundRect(x, y, rectW, rectH, radius);
         ctx.fill();
         ctx.stroke();
 
-        ctx.lineWidth = 1.5;
+        // 3. インダストリアル・ライン
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.roundRect(x + 10, y + 10, rectW - 20, rectH - 20, radius - 5);
+        ctx.moveTo(x + 40, y + 25); ctx.lineTo(x + rectW - 40, y + 25);
+        ctx.moveTo(x + 40, y + rectH - 25); ctx.lineTo(x + rectW - 40, y + rectH - 25);
         ctx.stroke();
 
-        const offset = 18;
+        // 4. サイドアクセント（持ち手風）
         ctx.fillStyle = '#333333';
-        [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(p => {
-            ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, Math.PI*2); ctx.fill();
-        });
+        ctx.fillRect(x - 5, y + 60, 5, 60);
+        ctx.fillRect(x + rectW, y + 60, 5, 60);
 
         ctx.textAlign = 'center';
-        let jaSize = 48;
-        ctx.font = `600 ${jaSize}px serif`;
+        
+        // 5. 日本語（モダンで太いゴシック）
+        let jaSize = 44;
+        ctx.font = `900 ${jaSize}px sans-serif`;
         while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 20) {
-            jaSize -= 2; ctx.font = `600 ${jaSize}px serif`;
+            jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
         ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -8 : 15));
 
+        // 6. 英語（ステッカー風）
         if (enText) {
-            let enSize = 16;
-            ctx.font = `900 ${enSize}px sans-serif`;
-            ctx.letterSpacing = "4px";
-            while (ctx.measureText(enText).width > rectW - 80 && enSize > 10) {
-                enSize -= 1; ctx.font = `900 ${enSize}px sans-serif`;
-            }
+            let enSize = 14;
+            ctx.font = `bold ${enSize}px sans-serif`;
+            ctx.letterSpacing = "6px";
             ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
         }
     }
 
     function showResult() {
-        const resultImg = document.getElementById('resultImg');
-        resultImg.src = canvas.toDataURL('image/png');
+        document.getElementById('resultImg').src = canvas.toDataURL('image/png');
         document.getElementById('resultModal').style.display = 'flex';
     }
 
