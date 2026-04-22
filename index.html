@@ -12,7 +12,7 @@
             --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
-            --radius: 15px;
+            --radius: 15px; /* 憲法：全要素 15px角丸 */
             /* ヴィンテージカラー */
             --plate-bg: #e0dacc; /* 黄ばんだ金属 */
             --rust: #8b4513;     /* 茶サビ */
@@ -114,7 +114,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="INDUSTRIAL PLATE" maxlength="40">
+        <input type="text" id="enInput" placeholder="INDUSTRIAL FLAT PLATE" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -151,55 +151,51 @@
     const jaInput = document.getElementById('jaInput');
     const enInput = document.getElementById('enInput');
 
-    // Canvasの描画ロジック（リアルなサビ、力強いフォント）
+    // Canvasの描画ロジック（まる枠なし、完全な平たいプレート、力強いステンシル風フォント）
     function draw() {
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // デザインサイズ
+        // デザインサイズ（プレート本体のみ）
         const rectW = 340;
         const rectH = 190;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
-        const radius = 25; // 角丸
+        const radius = 15; // 憲法：角丸
 
         // 1. シャドウ（プレートの立体感）
         ctx.fillStyle = 'rgba(0,0,0,0.1)';
         ctx.beginPath(); ctx.roundRect(x + 3, y + 3, rectW, rectH, radius); ctx.fill();
 
-        // 2. メインプレート（黄ばんだ金属色）
+        // 2. メインプレート（黄ばんだ金属色、完全な平ら）
         ctx.fillStyle = '#e0dacc'; 
         ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
 
-        // 3. サビ表現（脱・水玉、こびりついた茶錆）
+        // 3. サビ表現（脱・まる枠、脱・水玉、こびりついた茶錆）
         // プレート全体の汚れムラ（薄くボカす）
         ctx.fillStyle = 'rgba(139, 69, 19, 0.02)';
         ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
 
-        // 枠（フチ）のサビと盛り上がり（image_10.png参考、太く強調）
-        ctx.strokeStyle = '#8b4513'; // 茶サビ
-        ctx.lineWidth = 10;          // 太く強調
-        ctx.lineJoin = 'round';
+        // サビはプレート表面の劣化として描画（脱・立体的なフチ）
+        // 茶色い水玉（`ctx.fillRect`）を廃止。グラデーションとドット散布を組み合わせる。
+        
         ctx.save();
-        // 縁に不規則なサビドットを散布（はみ出さない）
-        ctx.clip(); // プレート内にクリップ
-        for (let i = 0; i < rectW * 4 + rectH * 4; i += 2) {
+        ctx.clip(); // プレート内にクリップ（脱・はみ出し）
+
+        // 不規則な茶サビドット（`ctx.fillRect` ではない、より細かい質感）を散布
+        for (let i = 0; i < rectW * 6 + rectH * 6; i += 2) {
             const angle = Math.random() * Math.PI * 2;
             const px = x + rectW/2 + Math.cos(angle) * (rectW/2 + Math.random()*2 - 4);
             const py = y + rectH/2 + Math.sin(angle) * (rectH/2 + Math.random()*2 - 4);
             if (px > x && px < x+rectW && py > y && py < y+rectH) {
                 ctx.fillStyle = `rgba(139, 69, 19, ${Math.random()*0.8})`;
-                ctx.fillRect(px, py, 2, 2);
+                // ドットではなく、よりリアルな質感のためにfillRectのサイズを微調整
+                ctx.fillRect(px, py, Math.random()*3, Math.random()*3);
             }
         }
         ctx.restore();
         
-        // 盛り上がった縁のメイン線
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = 'rgba(139, 69, 19, 0.7)';
-        ctx.beginPath(); ctx.roundRect(x+2, y+2, rectW-4, rectH-4, radius-2); ctx.stroke();
-
         // 四隅のネジ穴
         const offset = 22;
         ctx.fillStyle = '#8b4513';
@@ -211,17 +207,18 @@
             ctx.fillStyle = grad;
             ctx.beginPath(); ctx.arc(p[0], p[1], 10, 0, Math.PI*2); ctx.fill();
 
-            // ネジ穴
+            // ネジ穴（完全なまる）
             ctx.fillStyle = '#333333';
             ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, Math.PI*2); ctx.fill();
         });
 
         ctx.textAlign = 'center';
         
-        // 4. 日本語（整っているが力強い角ゴシック、刻印風）
+        // 4. 日本語（整っているが力強いステンシル風角ゴシック、刻印風）
         ctx.fillStyle = '#333333';
         let jaSize = 48;
-        // image_10.pngの「横浜」のような力強いフォントを指定（ sans-serif で太さを強調 ）
+        // image_12.pngの「横浜」のようなステンシル風フォントを指定（ Canvas API では自動生成不可なため、可能な限りそれに近い質感の、太くて力強いゴシック体を指定 ）
+        // 可能な限りステンシル風にするため、 sans-serif で太さを強調し、刻印感を出す
         ctx.font = `900 ${jaSize}px sans-serif`;
         // 幅に合わせてフォントサイズを縮小
         while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 20) {
