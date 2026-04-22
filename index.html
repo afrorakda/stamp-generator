@@ -7,30 +7,29 @@
     <link rel="apple-touch-icon" href="image_121.png">
     <link rel="icon" href="image_121.png">
     <style>
-        :root { --main: #333; --bg: #fff; --accent: #eee; --input-bg: #fafafa; --radius: 15px; }
+        :root { --main: #333; --bg: #fff; --accent: #eee; --radius: 15px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
         input { -webkit-user-select: text; user-select: text; }
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--main); display: flex; flex-direction: column; min-height: 100vh; }
+        body { margin: 0; font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--main); display: flex; flex-direction: column; min-height: 100vh; }
         header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
-        h1 span { font-weight: normal; color: #999; margin-right: 5px; }
         .hub-btn { text-decoration: none; color: var(--main); background: var(--accent); padding: 8px 15px; border-radius: var(--radius); font-size: 0.9rem; font-weight: bold; }
         main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
-        .preview-container { background: #dcdcdc; width: 100%; aspect-ratio: 370 / 320; border-radius: var(--radius); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; overflow: hidden; }
-        #previewCanvas { max-width: 95%; max-height: 95%; background: transparent; }
+        .preview-container { background: #bbb; width: 100%; aspect-ratio: 370 / 320; border-radius: var(--radius); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; overflow: hidden; }
+        #previewCanvas { max-width: 95%; max-height: 95%; }
         .input-group { position: relative; margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; border: 2px solid var(--accent); border-radius: var(--radius); background: var(--input-bg); font-size: 1rem; color: var(--main); outline: none; -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main); }
+        input { width: 100%; padding: 15px; border: 2px solid var(--accent); border-radius: var(--radius); background: #fafafa; font-size: 1rem; color: var(--main); outline: none; -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main); }
         .gen-btn { width: 100%; padding: 18px; background: var(--main); color: var(--bg); border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        footer { padding: 30px 20px; text-align: center; font-size: 0.8rem; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { background: var(--bg); padding: 20px; border-radius: var(--radius); max-width: 90%; text-align: center; }
-        #resultImg { width: 100%; max-width: 370px; border-radius: 5px; margin-bottom: 20px; -webkit-touch-callout: default; }
+        #resultImg { width: 100%; max-width: 370px; border-radius: 5px; -webkit-touch-callout: default; }
+        footer { padding: 30px 20px; text-align: center; font-size: 0.8rem; color: #999; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1><span>#121</span>Stamp Gen</h1>
+    <h1>#121 Stamp Gen</h1>
     <a href="https://afrorakda.github.io/" class="hub-btn">🏠Hub</a>
 </header>
 
@@ -39,11 +38,11 @@
         <canvas id="previewCanvas" width="370" height="320"></canvas>
     </div>
     <div class="input-group"><input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15"></div>
-    <div class="input-group"><input type="text" id="enInput" placeholder="AUTHENTIC RUST" maxlength="30"></div>
+    <div class="input-group"><input type="text" id="enInput" placeholder="OFFICIAL" maxlength="30"></div>
     <button class="gen-btn" onclick="showResult()">Create Stamp</button>
 </main>
 
-<footer><div class="copyright">No login / No tracking / No ads / afrorakda © 2026</div></footer>
+<footer>afrorakda © 2026</footer>
 
 <div id="resultModal" class="modal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
@@ -55,60 +54,66 @@
 <script>
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
-    const jaInput = document.getElementById('jaInput');
-    const enInput = document.getElementById('enInput');
-
-    const plateImg = new Image();
-    // ここに image_15.png の画像データを完全に埋め込みました
-    plateImg.src = 'https://raw.githubusercontent.com/afrorakda/afrorakda.github.io/main/assets/image_15.png'; 
-    // ※もし万が一これでも出ない場合は、ローカルの image.png をHTMLと同じ場所に置いて読み込むか、
-    // 完全に画像データを埋め込む必要があります。
 
     function draw() {
-        const jaText = jaInput.value || jaInput.placeholder;
-        const enText = (enInput.value || enInput.placeholder).toUpperCase();
-        
+        const jaText = document.getElementById('jaInput').value || "承知いたしました";
+        const enText = (document.getElementById('enInput').value || "OFFICIAL").toUpperCase();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const rectW = 340, rectH = 190;
-        const x = (canvas.width - rectW) / 2, y = (canvas.height - rectH) / 2;
+        const w = 340, h = 190, x = (370-w)/2, y = (320-h)/2, r = 15;
 
-        // 1. プレート描画（画像が読み込めない場合はセピア色で代用）
+        // 1. プレートベース（セピア）
+        ctx.fillStyle = '#cfc6b0';
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
+
+        // 2. リアル錆アルゴリズム（不規則な浸食）
         ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(x, y, rectW, rectH, 15);
-        ctx.clip();
-        if (plateImg.complete && plateImg.naturalWidth !== 0) {
-            ctx.drawImage(plateImg, 0, 0, plateImg.width, plateImg.height, x, y, rectW, rectH);
-        } else {
-            ctx.fillStyle = '#d8d0b8';
-            ctx.fill();
-            ctx.fillStyle = '#8b4513';
-            ctx.fillText("Ready for Texture", canvas.width/2, canvas.height/2);
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.clip();
+        
+        for(let i=0; i<800; i++) {
+            const rx = x + Math.random()*w;
+            const ry = y + Math.random()*h;
+            const dist = Math.min(rx-x, x+w-rx, ry-y, y+h-ry);
+            // 縁に錆を集中
+            if (dist < 15 || Math.random() < 0.04) {
+                const size = Math.random()*12;
+                const grad = ctx.createRadialGradient(rx, ry, 0, rx, ry, size);
+                grad.addColorStop(0, 'rgba(93, 46, 10, 0.8)');
+                grad.addColorStop(1, 'rgba(139, 69, 19, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(rx, ry, size, 0, Math.PI*2); ctx.fill();
+            }
         }
         ctx.restore();
 
-        // 2. 文字の馴染ませ
-        ctx.save();
-        ctx.globalCompositeOperation = 'multiply';
+        // 3. プレスの「盛り上がり」縁取り
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(x+3, y+3, w-6, h-6, r-3); ctx.stroke();
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.roundRect(x+5, y+5, w-10, h-10, r-5); ctx.stroke();
+
+        // 4. テキスト（鉄板刻印風）
         ctx.textAlign = 'center';
-        
-        let jaSize = 52;
+        let jaSize = 50;
         ctx.font = `900 ${jaSize}px "Arial Black", sans-serif`;
-        while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 25) {
+        while (ctx.measureText(jaText).width > w - 60) {
             jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
-        
-        // プレスの影と光を1pxずつずらして「そそる」厚みを出す
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.fillText(jaText, canvas.width / 2 - 1, y + rectH / 2 + (enText ? -6 : 14));
-        ctx.fillStyle = 'rgba(40, 40, 40, 0.9)';
-        ctx.fillText(jaText, canvas.width / 2, y + rectH / 2 + (enText ? -5 : 15));
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        // 刻印の影
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillText(jaText, 185 - 1, y + h/2 + (enText ? -6 : 14));
+        // メイン文字
+        ctx.fillStyle = 'rgba(40, 40, 40, 0.95)';
+        ctx.fillText(jaText, 185, y + h/2 + (enText ? -5 : 15));
         
         if (enText) {
             ctx.font = `900 16px "Arial Black", sans-serif`;
             ctx.letterSpacing = "4px";
-            ctx.fillText(enText, canvas.width / 2, y + rectH / 2 + 40);
+            ctx.fillText(enText, 185, y + h/2 + 40);
         }
         ctx.restore();
     }
@@ -118,11 +123,9 @@
         document.getElementById('resultModal').style.display = 'flex';
     }
     function closeModal() { document.getElementById('resultModal').style.display = 'none'; }
-
-    plateImg.onload = draw;
-    plateImg.onerror = draw; // 読み込めなくても描画は試みる
-    jaInput.addEventListener('input', draw);
-    enInput.addEventListener('input', draw);
+    document.getElementById('jaInput').addEventListener('input', draw);
+    document.getElementById('enInput').addEventListener('input', draw);
+    window.onload = draw;
 </script>
 </body>
 </html>
