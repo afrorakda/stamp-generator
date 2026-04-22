@@ -13,9 +13,9 @@
             --accent: #eee;
             --input-bg: #fafafa;
             --radius: 15px;
-            /* ヴィンテージカラーを追加 */
-            --sepia-plate: #f4ecd8; /* プレートの色 */
-            --rust: #8b4513;        /* サビの色（茶色） */
+            /* ヴィンテージカラー */
+            --sepia-plate: #f4ecd8; /* プレート色 */
+            --rust: #8b4513;        /* サビ色 */
         }
 
         * { 
@@ -114,7 +114,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="VINTAGE MISSION" maxlength="40">
+        <input type="text" id="enInput" placeholder="VINTAGE PLATE" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -126,7 +126,7 @@
         <a href="https://ko-fi.com/afrorakda" target="_blank">☕️buy me a coffee</a>
         <a href="javascript:void(0)" onclick="openModal('privacyModal')">Privacy Policy</a>
     </div>
-    <div class="copyright">No login / No tracking / No ads / Browser only<br>afrorakda © 2026</div>
+    <div class="copyright">Local processing.</div>
 </footer>
 
 <div id="resultModal" class="modal" onclick="closeModal('resultModal')">
@@ -151,63 +151,81 @@
     const jaInput = document.getElementById('jaInput');
     const enInput = document.getElementById('enInput');
 
-    // Canvasの描画ロジック（ヴィンテージ・サビ加工）
+    // Canvasの描画ロジック（ヴィンテージ・プレート加工、取手なし）
     function draw() {
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // デザインサイズ
-        const rectW = 320;
+        // デザインサイズ（プレート本体のみ）
+        const rectW = 340;
         const rectH = 190;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
-        const radius = 25;
+        const radius = 25; // 角丸
 
-        // 1. シャドウ（プレートの影）
+        // 1. シャドウ（プレートの立体感）
         ctx.fillStyle = 'rgba(0,0,0,0.1)';
-        ctx.beginPath(); ctx.roundRect(x + 5, y + 5, rectW, rectH, radius); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(x + 3, y + 3, rectW, rectH, radius); ctx.fill();
 
         // 2. メインプレート（セピア色）
-        ctx.fillStyle = '#f4ecd8'; // セピアプレート
+        ctx.fillStyle = '#f4ecd8'; // 黄ばんだセピア
         ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
 
-        // 3. プレートのサビ加工（茶サビ）
-        // 縁（フチ）のサビ（ぼかし）
+        // 3. サビ・劣化表現（image_8.png参考）
+        // プレート全体の汚れムラ
         ctx.save();
-        ctx.strokeStyle = '#8b4513'; // 茶サビ
-        ctx.lineWidth = 6;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#8b4513';
-        ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.stroke();
+        ctx.fillStyle = 'rgba(139, 69, 19, 0.05)'; // 薄い茶サビ色
+        for (let i = 0; i < 50; i++) {
+            ctx.beginPath();
+            ctx.arc(x + Math.random()*rectW, y + Math.random()*rectH, 5 + Math.random()*15, 0, Math.PI*2);
+            ctx.fill();
+        }
         ctx.restore();
 
-        // 4. 金属製ブラケット（左右の持ち手風）
-        ctx.fillStyle = '#333333';
-        const bracketH = 80;
-        const bracketY = y + (rectH - bracketH) / 2;
-        
-        // 左ブラケット
+        // 縁（フチ）のサビと盛り上がり
+        ctx.strokeStyle = '#8b4513'; // 茶サビ
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
         ctx.beginPath();
-        ctx.roundRect(x - 10, bracketY, 15, bracketH, [8, 0, 0, 8]);
-        ctx.fill();
-        // 右ブラケット
-        ctx.beginPath();
-        ctx.roundRect(x + rectW - 5, bracketY, 15, bracketH, [0, 8, 8, 0]);
-        ctx.fill();
+        // 縁を少しだけ掠れたように描画するために、点を散布する
+        for (let i = 0; i < rectW * 2 + rectH * 2; i += 3) {
+            const angle = i / (rectW + rectH) * Math.PI;
+            const px = x + rectW/2 + Math.cos(angle) * (rectW/2 - 2);
+            const py = y + rectH/2 + Math.sin(angle) * (rectH/2 - 2);
+            // 角丸に合わせて補正が必要だが、簡易的に点を散布
+            if (px > x && px < x+rectW && py > y && py < y+rectH) {
+                ctx.fillRect(px, py, 2, 2);
+            }
+        }
+        // 盛り上がった縁の線
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(139, 69, 19, 0.5)';
+        ctx.beginPath(); ctx.roundRect(x+2, y+2, rectW-4, rectH-4, radius-2); ctx.stroke();
+
+        // 四隅のネジ穴
+        const offset = 20;
+        ctx.fillStyle = '#8b4513';
+        [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(p => {
+            ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, Math.PI*2); ctx.fill();
+            // ネジ穴周囲のサビ
+            ctx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+            ctx.beginPath(); ctx.arc(p[0], p[1], 8, 0, Math.PI*2); ctx.fill();
+        });
 
         ctx.textAlign = 'center';
         
-        // 5. 日本語（モダンで少し角が丸いゴシック、刻印風）
+        // 4. 日本語（少し掠れた、無骨なゴシック、刻印風）
         ctx.fillStyle = '#333333';
         let jaSize = 46;
         ctx.font = `900 ${jaSize}px sans-serif`;
+        // 幅に合わせてフォントサイズを縮小
         while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 20) {
             jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
         ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -10 : 15));
 
-        // 6. 英語（ステッカー風）
+        // 5. 英語（ステッカー風）
         if (enText) {
             let enSize = 14;
             ctx.font = `bold ${enSize}px sans-serif`;
