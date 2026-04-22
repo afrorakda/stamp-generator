@@ -15,7 +15,16 @@
             --radius: 15px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            /* 基本的に全要素でテキスト選択を抑制 */
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* 入力欄だけは文字を打てるように許可 */
+        input { -webkit-user-select: text; user-select: text; }
 
         body {
             margin: 0;
@@ -41,10 +50,10 @@
         .preview-container {
             background: #e0e0e0; width: 100%; aspect-ratio: 370 / 320;
             border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
-            margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
         }
 
-        #previewCanvas { max-width: 90%; max-height: 90%; background: transparent; }
+        #previewCanvas { max-width: 90%; max-height: 90%; }
 
         .input-group { position: relative; margin-bottom: 15px; }
         input {
@@ -57,7 +66,7 @@
         .clr {
             position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
             background: var(--accent); border: none; width: 25px; height: 25px;
-            border-radius: 50%; color: var(--main); cursor: pointer; display: none;
+            border-radius: 50%; color: var(--main); display: none;
         }
 
         .gen-btn {
@@ -71,17 +80,24 @@
         .footer-links a { color: var(--main); text-decoration: none; font-weight: bold; }
         .copyright { color: #999; }
 
-        /* 結果表示用モーダル */
+        /* Modal & Result Image */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 2000; flex-direction: column;
-            justify-content: center; align-items: center; padding: 20px;
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
+            flex-direction: column;
         }
         .modal-content { 
             background: var(--bg); padding: 20px; border-radius: var(--radius); 
-            max-width: 100%; text-align: center;
+            max-width: 90%; text-align: center;
         }
-        .result-img { width: 100%; max-width: 370px; height: auto; margin-bottom: 20px; border: 1px solid #ddd; }
+        
+        #resultImg { 
+            width: 100%; max-width: 370px; border-radius: 5px; margin-bottom: 20px;
+            /* 画像の長押し保存を邪魔しない設定 */
+            -webkit-touch-callout: default; 
+            pointer-events: auto;
+        }
+
         .hint { color: #fff; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
@@ -113,17 +129,17 @@
 <footer>
     <div class="footer-links">
         <a href="https://ko-fi.com/afrorakda" target="_blank">☕️buy me a coffee</a>
-        <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>
+        <a href="javascript:void(0)" onclick="openModal('privacyModal')">Privacy Policy</a>
     </div>
     <div class="copyright">No login / No tracking / No ads / Browser only<br>afrorakda © 2026</div>
 </footer>
 
 <div id="resultModal" class="modal" onclick="closeModal('resultModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <img id="resultImg" class="result-img" src="" alt="Stamp Result">
+        <img id="resultImg" src="" alt="Stamp Result">
         <button class="gen-btn" onclick="closeModal('resultModal')">Close</button>
     </div>
-    <p class="hint">画像を長押しして保存してください</p>
+    <div class="hint">画像を長押しして保存してください</div>
 </div>
 
 <div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
@@ -164,53 +180,52 @@
         ctx.roundRect(x + 10, y + 10, rectW - 20, rectH - 20, radius - 5);
         ctx.stroke();
 
-        const dotSize = 3;
         const offset = 18;
         ctx.fillStyle = '#333333';
-        [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(pos => {
-            ctx.beginPath(); ctx.arc(pos[0], pos[1], dotSize, 0, Math.PI * 2); ctx.fill();
+        [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(p => {
+            ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, Math.PI*2); ctx.fill();
         });
 
         ctx.textAlign = 'center';
-        let jaFontSize = 48;
-        ctx.font = `600 ${jaFontSize}px serif`;
-        while (ctx.measureText(jaText).width > rectW - 60 && jaFontSize > 20) {
-            jaFontSize -= 2; ctx.font = `600 ${jaFontSize}px serif`;
+        let jaSize = 48;
+        ctx.font = `600 ${jaSize}px serif`;
+        while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 20) {
+            jaSize -= 2; ctx.font = `600 ${jaSize}px serif`;
         }
         ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -8 : 15));
 
         if (enText) {
-            let enFontSize = 16;
-            ctx.font = `900 ${enFontSize}px sans-serif`;
+            let enSize = 16;
+            ctx.font = `900 ${enSize}px sans-serif`;
             ctx.letterSpacing = "4px";
-            while (ctx.measureText(enText).width > rectW - 80 && enFontSize > 10) {
-                enFontSize -= 1; ctx.font = `900 ${enFontSize}px sans-serif`;
+            while (ctx.measureText(enText).width > rectW - 80 && enSize > 10) {
+                enSize -= 1; ctx.font = `900 ${enSize}px sans-serif`;
             }
             ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
         }
     }
 
     function showResult() {
-        const dataUrl = canvas.toDataURL('image/png');
-        document.getElementById('resultImg').src = dataUrl;
+        const resultImg = document.getElementById('resultImg');
+        resultImg.src = canvas.toDataURL('image/png');
         document.getElementById('resultModal').style.display = 'flex';
     }
 
     function clearInput(id) {
         const el = document.getElementById(id);
-        el.value = ''; toggleClr(el); draw();
-    }
-
-    function toggleClr(el) {
-        const btn = el.nextElementSibling;
-        btn.style.display = el.value.length > 0 ? 'block' : 'none';
+        el.value = '';
+        el.nextElementSibling.style.display = 'none';
+        draw();
     }
 
     [jaInput, enInput].forEach(el => {
-        el.addEventListener('input', () => { toggleClr(el); draw(); });
+        el.addEventListener('input', () => {
+            el.nextElementSibling.style.display = el.value.length > 0 ? 'block' : 'none';
+            draw();
+        });
     });
 
-    function openPrivacy() { document.getElementById('privacyModal').style.display = 'flex'; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     window.onload = draw;
