@@ -13,6 +13,9 @@
             --accent: #eee;
             --input-bg: #fafafa;
             --radius: 15px;
+            /* ヴィンテージカラーを追加 */
+            --sepia-plate: #f4ecd8; /* プレートの色 */
+            --rust: #8b4513;        /* サビの色（茶色） */
         }
 
         * { 
@@ -46,12 +49,13 @@
         main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
 
         .preview-container {
-            background: #d0d0d0; width: 100%; aspect-ratio: 370 / 320;
+            background: #ccc; /* 透過が見やすい少し濃いグレー */
+            width: 100%; aspect-ratio: 370 / 320;
             border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
             margin-bottom: 20px;
         }
 
-        #previewCanvas { max-width: 90%; max-height: 90%; }
+        #previewCanvas { max-width: 95%; max-height: 95%; }
 
         .input-group { position: relative; margin-bottom: 15px; }
         input {
@@ -110,7 +114,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="OFFICIAL MISSION" maxlength="40">
+        <input type="text" id="enInput" placeholder="VINTAGE MISSION" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -136,7 +140,7 @@
 <div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>Privacy Policy</h3>
-        <p>No login. No tracking. No ads. Browser only.</p>
+        <p>Local processing.</p>
         <button class="gen-btn" onclick="closeModal('privacyModal')">Close</button>
     </div>
 </div>
@@ -147,6 +151,7 @@
     const jaInput = document.getElementById('jaInput');
     const enInput = document.getElementById('enInput');
 
+    // Canvasの描画ロジック（ヴィンテージ・サビ加工）
     function draw() {
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
@@ -154,54 +159,60 @@
 
         // デザインサイズ
         const rectW = 320;
-        const rectH = 180;
+        const rectH = 190;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
-        const radius = 30; // 丸みを強く
+        const radius = 25;
 
-        // 1. シャドウ（スタンプの厚み）
+        // 1. シャドウ（プレートの影）
         ctx.fillStyle = 'rgba(0,0,0,0.1)';
-        ctx.beginPath();
-        ctx.roundRect(x + 4, y + 4, rectW, rectH, radius);
-        ctx.fill();
+        ctx.beginPath(); ctx.roundRect(x + 5, y + 5, rectW, rectH, radius); ctx.fill();
 
-        // 2. メインプレート
-        ctx.strokeStyle = '#333333';
-        ctx.lineWidth = 10;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.roundRect(x, y, rectW, rectH, radius);
-        ctx.fill();
-        ctx.stroke();
+        // 2. メインプレート（セピア色）
+        ctx.fillStyle = '#f4ecd8'; // セピアプレート
+        ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
 
-        // 3. インダストリアル・ライン
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x + 40, y + 25); ctx.lineTo(x + rectW - 40, y + 25);
-        ctx.moveTo(x + 40, y + rectH - 25); ctx.lineTo(x + rectW - 40, y + rectH - 25);
-        ctx.stroke();
+        // 3. プレートのサビ加工（茶サビ）
+        // 縁（フチ）のサビ（ぼかし）
+        ctx.save();
+        ctx.strokeStyle = '#8b4513'; // 茶サビ
+        ctx.lineWidth = 6;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#8b4513';
+        ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.stroke();
+        ctx.restore();
 
-        // 4. サイドアクセント（持ち手風）
+        // 4. 金属製ブラケット（左右の持ち手風）
         ctx.fillStyle = '#333333';
-        ctx.fillRect(x - 5, y + 60, 5, 60);
-        ctx.fillRect(x + rectW, y + 60, 5, 60);
+        const bracketH = 80;
+        const bracketY = y + (rectH - bracketH) / 2;
+        
+        // 左ブラケット
+        ctx.beginPath();
+        ctx.roundRect(x - 10, bracketY, 15, bracketH, [8, 0, 0, 8]);
+        ctx.fill();
+        // 右ブラケット
+        ctx.beginPath();
+        ctx.roundRect(x + rectW - 5, bracketY, 15, bracketH, [0, 8, 8, 0]);
+        ctx.fill();
 
         ctx.textAlign = 'center';
         
-        // 5. 日本語（モダンで太いゴシック）
-        let jaSize = 44;
+        // 5. 日本語（モダンで少し角が丸いゴシック、刻印風）
+        ctx.fillStyle = '#333333';
+        let jaSize = 46;
         ctx.font = `900 ${jaSize}px sans-serif`;
         while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 20) {
             jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
-        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -8 : 15));
+        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -10 : 15));
 
         // 6. 英語（ステッカー風）
         if (enText) {
             let enSize = 14;
             ctx.font = `bold ${enSize}px sans-serif`;
-            ctx.letterSpacing = "6px";
-            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
+            ctx.letterSpacing = "5px";
+            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 45);
         }
     }
 
