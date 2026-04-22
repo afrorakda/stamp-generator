@@ -19,7 +19,7 @@
 
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--main);
             display: flex;
@@ -27,139 +27,55 @@
             min-height: 100vh;
         }
 
-        header {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
         h1 span { font-weight: normal; color: #999; margin-right: 5px; }
 
         .hub-btn {
-            text-decoration: none;
-            color: var(--main);
-            background: var(--accent);
-            padding: 8px 15px;
-            border-radius: var(--radius);
-            font-size: 0.9rem;
-            font-weight: bold;
+            text-decoration: none; color: var(--main); background: var(--accent);
+            padding: 8px 15px; border-radius: var(--radius); font-size: 0.9rem; font-weight: bold;
         }
 
-        main {
-            flex: 1;
-            padding: 0 20px;
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-        }
+        main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
 
         .preview-container {
-            background: #d0d0d0; /* 透過が見やすい少し濃い目のグレー */
-            width: 100%;
-            aspect-ratio: 370 / 320;
-            border-radius: var(--radius);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            background: #e0e0e0; width: 100%; aspect-ratio: 370 / 320;
+            border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
+            margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
         }
 
-        #previewCanvas {
-            max-width: 90%;
-            max-height: 90%;
-            background: transparent;
-        }
+        #previewCanvas { max-width: 90%; max-height: 90%; background: transparent; }
 
-        .input-group {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
+        .input-group { position: relative; margin-bottom: 15px; }
         input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--accent);
-            border-radius: var(--radius);
-            background: var(--input-bg);
-            font-size: 1rem;
-            color: var(--main);
-            outline: none;
-            -webkit-appearance: none;
-            opacity: 1 !important;
-            -webkit-text-fill-color: var(--main);
+            width: 100%; padding: 15px; border: 2px solid var(--accent);
+            border-radius: var(--radius); background: var(--input-bg);
+            font-size: 1rem; color: var(--main); outline: none;
+            -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main);
         }
-
-        input::placeholder { color: #bbb; }
 
         .clr {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--accent);
-            border: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            color: var(--main);
-            cursor: pointer;
-            display: none;
-            font-size: 12px;
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            background: var(--accent); border: none; width: 25px; height: 25px;
+            border-radius: 50%; color: var(--main); cursor: pointer; display: none;
         }
 
         .gen-btn {
-            width: 100%;
-            padding: 18px;
-            background: var(--main);
-            color: var(--bg);
-            border: none;
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
+            width: 100%; padding: 18px; background: var(--main); color: var(--bg);
+            border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold;
+            cursor: pointer; margin-top: 10px;
         }
 
-        footer {
-            padding: 30px 20px;
-            text-align: center;
-            font-size: 0.8rem;
-        }
-
-        .footer-links {
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .footer-links a {
-            color: var(--main);
-            text-decoration: none;
-            font-weight: bold;
-        }
-
+        footer { padding: 30px 20px; text-align: center; font-size: 0.8rem; }
+        .footer-links { margin-bottom: 15px; display: flex; justify-content: center; gap: 15px; }
+        .footer-links a { color: var(--main); text-decoration: none; font-weight: bold; }
         .copyright { color: #999; }
 
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
         }
-
-        .modal-content {
-            background: var(--bg);
-            padding: 30px;
-            border-radius: var(--radius);
-            max-width: 90%;
-        }
+        .modal-content { background: var(--bg); padding: 30px; border-radius: var(--radius); max-width: 90%; }
     </style>
 </head>
 <body>
@@ -180,7 +96,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="NOTED" maxlength="40">
+        <input type="text" id="enInput" placeholder="OFFICIAL NOTED" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -215,46 +131,58 @@
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 枠のサイズ（余白を考慮）
         const rectW = 340;
-        const rectH = 200;
+        const rectH = 220;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
         const radius = 15;
 
-        // ボックス描画
+        // 1. 外枠 (重厚なメイン線)
         ctx.strokeStyle = '#333333';
-        ctx.lineWidth = 10;
+        ctx.lineWidth = 6;
         ctx.fillStyle = '#ffffff';
-
         ctx.beginPath();
         ctx.roundRect(x, y, rectW, rectH, radius);
         ctx.fill();
         ctx.stroke();
 
+        // 2. 内枠 (デザインの締まりを出す細線)
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(x + 10, y + 10, rectW - 20, rectH - 20, radius - 5);
+        ctx.stroke();
+
+        // 3. 四隅のネジ止め風アクセント (インダストリアル感)
+        const dotSize = 3;
+        const offset = 18;
         ctx.fillStyle = '#333333';
+        [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(pos => {
+            ctx.beginPath();
+            ctx.arc(pos[0], pos[1], dotSize, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
         ctx.textAlign = 'center';
 
-        // 日本語（可変サイズ調整）
-        let jaFontSize = 44;
-        ctx.font = `bold ${jaFontSize}px sans-serif`;
-        // 幅に合わせてフォントサイズを縮小
-        while (ctx.measureText(jaText).width > rectW - 40 && jaFontSize > 20) {
+        // 4. 日本語 (あえて少しだけウェイトを落として品を出す)
+        let jaFontSize = 48;
+        ctx.font = `600 ${jaFontSize}px "Hiragino Mincho ProN", "serif"`; // 明朝系で知的に
+        while (ctx.measureText(jaText).width > rectW - 60 && jaFontSize > 20) {
             jaFontSize -= 2;
-            ctx.font = `bold ${jaFontSize}px sans-serif`;
+            ctx.font = `600 ${jaFontSize}px serif`;
         }
-        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -5 : 15));
+        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -8 : 15));
 
-        // 英語（可変サイズ調整）
+        // 5. 英語 (太く、短く、ラベルのように)
         if (enText) {
-            let enFontSize = 18;
-            ctx.font = `${enFontSize}px sans-serif`;
-            ctx.letterSpacing = "2px";
-            while (ctx.measureText(enText).width > rectW - 60 && enFontSize > 10) {
+            let enFontSize = 16;
+            ctx.font = `900 ${enFontSize}px sans-serif`;
+            ctx.letterSpacing = "4px"; // 文字間を広くしてモダンに
+            while (ctx.measureText(enText).width > rectW - 80 && enFontSize > 10) {
                 enFontSize -= 1;
-                ctx.font = `${enFontSize}px sans-serif`;
+                ctx.font = `900 ${enFontSize}px sans-serif`;
             }
-            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 35);
+            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
         }
     }
 
