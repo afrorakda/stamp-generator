@@ -114,7 +114,7 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="INDUSTRIAL FLAT PLATE" maxlength="40">
+        <input type="text" id="enInput" placeholder="VINTAGE RUSTED PLATE" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -172,44 +172,43 @@
         ctx.fillStyle = '#e0dacc'; 
         ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
 
-        // 3. サビ表現（脱・まる枠、脱・水玉、こびりついた茶錆）
+        // 3. サビ・劣化表現（image_12.png参考）
         // プレート全体の汚れムラ（薄くボカす）
-        ctx.fillStyle = 'rgba(139, 69, 19, 0.02)';
-        ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
+        ctx.fillStyle = 'rgba(139, 69, 19, 0.05)'; // 薄い茶サビ色
+        for (let i = 0; i < 50; i++) {
+            ctx.beginPath();
+            ctx.arc(x + Math.random()*rectW, y + Math.random()*rectH, 5 + Math.random()*15, 0, Math.PI*2);
+            ctx.fill();
+        }
 
-        // サビはプレート表面の劣化として描画（脱・立体的なフチ）
-        // 茶色い水玉（`ctx.fillRect`）を廃止。グラデーションとドット散布を組み合わせる。
-        
-        ctx.save();
-        ctx.clip(); // プレート内にクリップ（脱・はみ出し）
-
-        // 不規則な茶サビドット（`ctx.fillRect` ではない、より細かい質感）を散布
-        for (let i = 0; i < rectW * 6 + rectH * 6; i += 2) {
-            const angle = Math.random() * Math.PI * 2;
-            const px = x + rectW/2 + Math.cos(angle) * (rectW/2 + Math.random()*2 - 4);
-            const py = y + rectH/2 + Math.sin(angle) * (rectH/2 + Math.random()*2 - 4);
+        // 縁（フチ）のサビと盛り上がり（脱・物理的な盛り上がり）
+        ctx.strokeStyle = '#8b4513'; // 茶サビ
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        // 縁を少しだけ掠れたように描画するために、点を散布する
+        for (let i = 0; i < rectW * 2 + rectH * 2; i += 3) {
+            const angle = i / (rectW + rectH) * Math.PI;
+            const px = x + rectW/2 + Math.cos(angle) * (rectW/2 - 2);
+            const py = y + rectH/2 + Math.sin(angle) * (rectH/2 - 2);
+            // 角丸に合わせて補正が必要だが、簡易的に点を散布
             if (px > x && px < x+rectW && py > y && py < y+rectH) {
-                ctx.fillStyle = `rgba(139, 69, 19, ${Math.random()*0.8})`;
-                // ドットではなく、よりリアルな質感のためにfillRectのサイズを微調整
-                ctx.fillRect(px, py, Math.random()*3, Math.random()*3);
+                ctx.fillRect(px, py, 2, 2);
             }
         }
-        ctx.restore();
-        
+        // 盛り上がった縁の線
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(139, 69, 19, 0.5)';
+        ctx.beginPath(); ctx.roundRect(x+2, y+2, rectW-4, rectH-4, radius-2); ctx.stroke();
+
         // 四隅のネジ穴
-        const offset = 22;
+        const offset = 20;
         ctx.fillStyle = '#8b4513';
         [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(p => {
-            // ネジ穴周囲のサビグラデーション
-            const grad = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 10);
-            grad.addColorStop(0, 'rgba(139, 69, 19, 1)');
-            grad.addColorStop(1, 'rgba(139, 69, 19, 0)');
-            ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.arc(p[0], p[1], 10, 0, Math.PI*2); ctx.fill();
-
-            // ネジ穴（完全なまる）
-            ctx.fillStyle = '#333333';
             ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, Math.PI*2); ctx.fill();
+            // ネジ穴周囲のサビ
+            ctx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+            ctx.beginPath(); ctx.arc(p[0], p[1], 8, 0, Math.PI*2); ctx.fill();
         });
 
         ctx.textAlign = 'center';
@@ -225,13 +224,13 @@
             jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
         // 少し刻印感を出すために、文字をわずかに下にずらす
-        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -8 : 15));
+        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -10 : 15));
 
         // 5. 英語（ステッカー風）
         if (enText) {
             let enSize = 14;
             ctx.font = `bold ${enSize}px sans-serif`;
-            ctx.letterSpacing = "6px";
+            ctx.letterSpacing = "5px";
             ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 45);
         }
     }
