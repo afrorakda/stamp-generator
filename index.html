@@ -1,210 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stamp Generator</title>
-    <link rel="apple-touch-icon" href="image_121.png">
-    <link rel="icon" href="image_121.png">
-    <style>
-        :root {
-            --main: #333;
-            --bg: #fff;
-            --accent: #eee;
-            --input-bg: #fafafa;
-            --radius: 15px;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
-        input { -webkit-user-select: text; user-select: text; }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
-        h1 span { font-weight: normal; color: #999; margin-right: 5px; }
-
-        .hub-btn {
-            text-decoration: none; color: var(--main); background: var(--accent);
-            padding: 8px 15px; border-radius: var(--radius); font-size: 0.9rem; font-weight: bold;
-        }
-
-        main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
-
-        .preview-container {
-            background: #999; width: 100%; aspect-ratio: 370 / 320;
-            border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
-            margin-bottom: 20px;
-        }
-
-        #previewCanvas { max-width: 95%; max-height: 95%; }
-
-        .input-group { position: relative; margin-bottom: 15px; }
-        input {
-            width: 100%; padding: 15px; border: 2px solid var(--accent);
-            border-radius: var(--radius); background: var(--input-bg);
-            font-size: 1rem; color: var(--main); outline: none;
-            -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main);
-        }
-
-        .gen-btn {
-            width: 100%; padding: 18px; background: var(--main); color: var(--bg);
-            border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold;
-            cursor: pointer; margin-top: 10px;
-        }
-
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
-            flex-direction: column;
-        }
-        .modal-content { background: var(--bg); padding: 20px; border-radius: var(--radius); max-width: 90%; text-align: center; }
-        #resultImg { width: 100%; max-width: 370px; -webkit-touch-callout: default; }
-        .hint { color: #fff; margin-top: 15px; font-weight: bold; }
-
-        footer { padding: 30px 20px; text-align: center; font-size: 0.8rem; }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1><span>#121</span>Stamp Gen</h1>
-    <a href="https://afrorakda.github.io/" class="hub-btn">🏠Hub</a>
-</header>
-
-<main>
-    <div class="preview-container">
-        <canvas id="previewCanvas" width="370" height="320"></canvas>
-    </div>
-
-    <div class="input-group">
-        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15">
-    </div>
-
-    <div class="input-group">
-        <input type="text" id="enInput" placeholder="VINTAGE RUST" maxlength="30">
-    </div>
-
-    <button class="gen-btn" onclick="showResult()">Create Stamp</button>
-</main>
-
-<footer>
-    <div class="copyright">No login / No tracking / No ads / afrorakda © 2026</div>
-</footer>
-
-<div id="resultModal" class="modal" onclick="closeModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <img id="resultImg" src="" alt="Stamp Result">
-        <button class="gen-btn" onclick="closeModal()">Close</button>
-    </div>
-    <div class="hint">画像を長押しして保存</div>
-</div>
-
-<script>
-    const canvas = document.getElementById('previewCanvas');
-    const ctx = canvas.getContext('2d');
+    // 背景となる「本物のプレート画像」を定義（あなたのリポジトリにある画像を指定）
+    const plateImg = new Image();
+    plateImg.src = 'plate_texture_121.png'; // ここに最高に渋い背景を1枚用意します
 
     function draw() {
-        const jaText = document.getElementById('jaInput').value || "承知いたしました";
-        const enText = (document.getElementById('enInput').value || "VINTAGE RUST").toUpperCase();
+        if (!plateImg.complete) return; // 画像読み込み待ち
+
+        const jaText = jaInput.value || jaInput.placeholder;
+        const enText = (enInput.value || enInput.placeholder).toUpperCase();
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const w = 340, h = 190;
-        const x = (canvas.width - w) / 2, y = (canvas.height - h) / 2;
-        const r = 15;
+        // 1. 本物の質感をそのまま描画
+        ctx.drawImage(plateImg, 15, 60, 340, 190);
 
-        // 1. プレート地色
-        ctx.fillStyle = '#d6ceb8';
-        ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
-
-        // 2. リアルな「浸食する錆」アルゴリズム
-        function addRustLayer(color, density, blur) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'source-atop';
-            ctx.fillStyle = color;
-            ctx.shadowBlur = blur;
-            ctx.shadowColor = color;
-            for(let i=0; i<density; i++){
-                const rx = x + Math.random()*w;
-                const ry = y + Math.random()*h;
-                // 縁（フチ）に錆を集中させる
-                const edgeDist = Math.min(rx-x, x+w-rx, ry-y, y+h-ry);
-                if (edgeDist < 20 || Math.random() < 0.05) {
-                    ctx.beginPath();
-                    ctx.arc(rx, ry, Math.random()*8, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            }
-            ctx.restore();
-        }
-
-        addRustLayer('#5d2e0a', 400, 2); // 深い錆
-        addRustLayer('#8b4513', 300, 5); // 明るい錆
-        addRustLayer('#3e1f07', 150, 0); // 焦げたような点状の錆
-
-        // 3. プレートの「反り」と「プレス感」
-        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.roundRect(x+2, y+2, w-4, h-4, r-2); ctx.stroke();
-        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-        ctx.beginPath(); ctx.roundRect(x+5, y+5, w-10, h-10, r-5); ctx.stroke();
-
-        // 4. 文字描画（肉厚ステンシル・プレス風）
+        // 2. 文字を「鉄」に馴染ませる設定
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply'; // 下地のサビを文字に透過させる
         ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(51, 51, 51, 0.9)'; // 漆黒ではなく鉄馴染みの良い黒
         
-        // 日本語
-        let jaSize = 48;
-        ctx.font = `900 ${jaSize}px "Arial Black", sans-serif`;
-        // 文字自体にサビを少し被せる
-        ctx.fillStyle = 'rgba(51,51,51,0.9)';
-        ctx.shadowBlur = 1;
-        ctx.shadowColor = 'rgba(255,255,255,0.5)';
-        ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+        // 3. 肉厚なプレスフォントの再現
+        let jaSize = 50;
+        ctx.font = `900 ${jaSize}px sans-serif`;
         
-        // 文字の「太さ」をさらに強調
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(51,51,51,0.9)';
-        ctx.strokeText(jaText, canvas.width/2, y + h/2);
-        ctx.fillText(jaText, canvas.width/2, y + h/2);
-
-        // 英語
-        ctx.font = `900 16px "Arial Black", sans-serif`;
-        ctx.letterSpacing = "4px";
-        ctx.shadowColor = 'transparent';
-        ctx.fillText(enText, canvas.width/2, y + h/2 + 40);
-
-        // 5. ネジ穴の錆
-        const off = 20;
-        const holes = [[x+off, y+off], [x+w-off, y+off], [x+off, y+h-off], [x+w-off, y+h-off]];
-        holes.forEach(p => {
-            const g = ctx.createRadialGradient(p[0],p[1],0, p[0],p[1],12);
-            g.addColorStop(0, '#5d2e0a'); g.addColorStop(1, 'transparent');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(p[0],p[1],12,0,Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#222';
-            ctx.beginPath(); ctx.arc(p[0],p[1],4,0,Math.PI*2); ctx.fill();
-        });
+        // プレスの立体感を出す（白のハイライトを微細にずらす）
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'rgba(255,255,255,0.4)';
+        ctx.shadowOffsetX = -1;
+        ctx.shadowOffsetY = -1;
+        
+        ctx.fillText(jaText, canvas.width / 2, 165);
+        
+        // 4. 英語も同様に
+        ctx.font = `900 16px sans-serif`;
+        ctx.letterSpacing = "5px";
+        ctx.fillText(enText, canvas.width / 2, 205);
+        ctx.restore();
     }
-
-    function showResult() {
-        document.getElementById('resultImg').src = canvas.toDataURL('image/png');
-        document.getElementById('resultModal').style.display = 'flex';
-    }
-    function closeModal() { document.getElementById('resultModal').style.display = 'none'; }
-    
-    document.getElementById('jaInput').addEventListener('input', draw);
-    document.getElementById('enInput').addEventListener('input', draw);
-    window.onload = draw;
-</script>
-
-</body>
-</html>
