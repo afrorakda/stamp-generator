@@ -12,10 +12,8 @@
             --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
-            --radius: 15px; /* 憲法：全要素 15px角丸 */
-            /* ヴィンテージカラー */
-            --plate-bg: #e0dacc; /* 黄ばんだ金属 */
-            --rust: #8b4513;     /* 茶サビ */
+            --radius: 15px;
+            --plate-color: #d8d0b8; /* より金属質なセピア */
         }
 
         * { 
@@ -29,7 +27,7 @@
 
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Arial", sans-serif;
             background-color: var(--bg);
             color: var(--main);
             display: flex;
@@ -49,8 +47,7 @@
         main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
 
         .preview-container {
-            background: #dcdcdc; /* 透過が見やすい少し濃いグレー */
-            width: 100%; aspect-ratio: 370 / 320;
+            background: #bbb; width: 100%; aspect-ratio: 370 / 320;
             border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
             margin-bottom: 20px;
         }
@@ -78,22 +75,19 @@
         }
 
         footer { padding: 30px 20px; text-align: center; font-size: 0.8rem; }
-        .footer-links { margin-bottom: 15px; display: flex; justify-content: center; gap: 15px; }
-        .footer-links a { color: var(--main); text-decoration: none; font-weight: bold; }
-        .copyright { color: #999; }
+        .copyright { color: #999; margin-top: 10px; }
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center;
             flex-direction: column;
         }
         .modal-content { 
             background: var(--bg); padding: 20px; border-radius: var(--radius); 
             max-width: 90%; text-align: center;
         }
-        
-        #resultImg { width: 100%; max-width: 370px; border-radius: 5px; margin-bottom: 20px; -webkit-touch-callout: default; }
-        .hint { color: #fff; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
+        #resultImg { width: 100%; max-width: 370px; border-radius: 5px; -webkit-touch-callout: default; }
+        .hint { color: #fff; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -109,12 +103,12 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="20">
+        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15">
         <button class="clr" id="clrJa" onclick="clearInput('jaInput')">×</button>
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="VINTAGE RUSTED PLATE" maxlength="40">
+        <input type="text" id="enInput" placeholder="VINTAGE MISSION" maxlength="30">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -122,16 +116,16 @@
 </main>
 
 <footer>
-    <div class="footer-links">
-        <a href="https://ko-fi.com/afrorakda" target="_blank">☕️buy me a coffee</a>
-        <a href="javascript:void(0)" onclick="openModal('privacyModal')">Privacy Policy</a>
+    <div class="footer-links" style="margin-bottom:15px; display:flex; justify-content:center; gap:15px;">
+        <a href="https://ko-fi.com/afrorakda" target="_blank" style="color:var(--main); text-decoration:none; font-weight:bold;">☕️buy me a coffee</a>
+        <a href="javascript:void(0)" onclick="openModal('privacyModal')" style="color:var(--main); text-decoration:none; font-weight:bold;">Privacy Policy</a>
     </div>
-    <div class="copyright">Local processing.</div>
+    <div class="copyright">No login / No tracking / No ads / Browser only<br>afrorakda © 2026</div>
 </footer>
 
 <div id="resultModal" class="modal" onclick="closeModal('resultModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <img id="resultImg" src="" alt="Stamp Result">
+        <img id="resultImg" src="" alt="Result">
         <button class="gen-btn" onclick="closeModal('resultModal')">Close</button>
     </div>
     <div class="hint">画像を長押しして「写真に追加」</div>
@@ -140,7 +134,7 @@
 <div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>Privacy Policy</h3>
-        <p>Local processing.</p>
+        <p>All processing is done in your browser. No data is sent to any server.</p>
         <button class="gen-btn" onclick="closeModal('privacyModal')">Close</button>
     </div>
 </div>
@@ -151,87 +145,83 @@
     const jaInput = document.getElementById('jaInput');
     const enInput = document.getElementById('enInput');
 
-    // Canvasの描画ロジック（まる枠なし、完全な平たいプレート、力強いステンシル風フォント）
     function draw() {
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // デザインサイズ（プレート本体のみ）
         const rectW = 340;
-        const rectH = 190;
+        const rectH = 200;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
-        const radius = 15; // 憲法：角丸
+        const radius = 15;
 
-        // 1. シャドウ（プレートの立体感）
-        ctx.fillStyle = 'rgba(0,0,0,0.1)';
-        ctx.beginPath(); ctx.roundRect(x + 3, y + 3, rectW, rectH, radius); ctx.fill();
-
-        // 2. メインプレート（黄ばんだ金属色、完全な平ら）
-        ctx.fillStyle = '#e0dacc'; 
-        ctx.beginPath(); ctx.roundRect(x, y, rectW, rectH, radius); ctx.fill();
-
-        // 3. サビ・劣化表現（image_12.png参考）
-        // プレート全体の汚れムラ（薄くボカす）
-        ctx.fillStyle = 'rgba(139, 69, 19, 0.05)'; // 薄い茶サビ色
-        for (let i = 0; i < 50; i++) {
-            ctx.beginPath();
-            ctx.arc(x + Math.random()*rectW, y + Math.random()*rectH, 5 + Math.random()*15, 0, Math.PI*2);
-            ctx.fill();
-        }
-
-        // 縁（フチ）のサビと盛り上がり（脱・物理的な盛り上がり）
-        ctx.strokeStyle = '#8b4513'; // 茶サビ
-        ctx.lineWidth = 4;
-        ctx.lineJoin = 'round';
+        // 1. ベースプレート（平らな金属板）
+        ctx.fillStyle = '#d8d0b8';
         ctx.beginPath();
-        // 縁を少しだけ掠れたように描画するために、点を散布する
-        for (let i = 0; i < rectW * 2 + rectH * 2; i += 3) {
-            const angle = i / (rectW + rectH) * Math.PI;
-            const px = x + rectW/2 + Math.cos(angle) * (rectW/2 - 2);
-            const py = y + rectH/2 + Math.sin(angle) * (rectH/2 - 2);
-            // 角丸に合わせて補正が必要だが、簡易的に点を散布
-            if (px > x && px < x+rectW && py > y && py < y+rectH) {
-                ctx.fillRect(px, py, 2, 2);
-            }
-        }
-        // 盛り上がった縁の線
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(139, 69, 19, 0.5)';
-        ctx.beginPath(); ctx.roundRect(x+2, y+2, rectW-4, rectH-4, radius-2); ctx.stroke();
+        ctx.roundRect(x, y, rectW, rectH, radius);
+        ctx.fill();
 
-        // 四隅のネジ穴
+        // 2. プレスの盛り上がり（影と光の細いライン）
+        ctx.save();
+        ctx.lineWidth = 1.5;
+        // 影
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath(); ctx.roundRect(x + 5, y + 5, rectW - 10, rectH - 10, radius - 5); ctx.stroke();
+        // 光
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath(); ctx.roundRect(x + 3, y + 3, rectW - 6, rectH - 6, radius - 3); ctx.stroke();
+        ctx.restore();
+
+        // 3. リアルなサビ加工（ノイズ粒子散布）
+        ctx.save();
+        ctx.clip(); // プレート内に限定
+        for (let i = 0; i < 1500; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 8; // 縁に近いほど多い
+            const px = (Math.random() < 0.5) ? x + dist : x + rectW - dist;
+            const py = y + Math.random() * rectH;
+            ctx.fillStyle = `rgba(139, 69, 19, ${Math.random() * 0.5})`;
+            ctx.fillRect(px, py, 1.5, 1.5);
+            
+            const px2 = x + Math.random() * rectW;
+            const py2 = (Math.random() < 0.5) ? y + dist : y + rectH - dist;
+            ctx.fillRect(px2, py2, 1.5, 1.5);
+        }
+        ctx.restore();
+
+        // 4. ネジ穴
         const offset = 20;
-        ctx.fillStyle = '#8b4513';
         [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(p => {
-            ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, Math.PI*2); ctx.fill();
-            // ネジ穴周囲のサビ
-            ctx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+            ctx.fillStyle = 'rgba(139, 69, 19, 0.4)';
             ctx.beginPath(); ctx.arc(p[0], p[1], 8, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#333';
+            ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, Math.PI*2); ctx.fill();
         });
 
+        // 5. テキスト描画（最強のウェイト + プレスの影）
         ctx.textAlign = 'center';
-        
-        // 4. 日本語（整っているが力強いステンシル風角ゴシック、刻印風）
         ctx.fillStyle = '#333333';
-        let jaSize = 48;
-        // image_12.pngの「横浜」のようなステンシル風フォントを指定（ Canvas API では自動生成不可なため、可能な限りそれに近い質感の、太くて力強いゴシック体を指定 ）
-        // 可能な限りステンシル風にするため、 sans-serif で太さを強調し、刻印感を出す
-        ctx.font = `900 ${jaSize}px sans-serif`;
-        // 幅に合わせてフォントサイズを縮小
-        while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 20) {
+        
+        // 日本語（プレスされた肉厚感）
+        let jaSize = 52;
+        ctx.font = `900 ${jaSize}px "Arial Black", "Impact", sans-serif`;
+        while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 25) {
             jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
-        // 少し刻印感を出すために、文字をわずかに下にずらす
+        // プレスの影をわずかに付ける
+        ctx.shadowColor = 'rgba(255,255,255,0.3)';
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
         ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -10 : 15));
 
-        // 5. 英語（ステッカー風）
+        // 英語
         if (enText) {
-            let enSize = 14;
-            ctx.font = `bold ${enSize}px sans-serif`;
+            ctx.shadowColor = 'transparent';
+            let enSize = 16;
+            ctx.font = `900 ${enSize}px "Arial Black", sans-serif`;
             ctx.letterSpacing = "5px";
-            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 45);
+            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
         }
     }
 
