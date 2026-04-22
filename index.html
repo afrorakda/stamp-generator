@@ -71,11 +71,18 @@
         .footer-links a { color: var(--main); text-decoration: none; font-weight: bold; }
         .copyright { color: #999; }
 
+        /* 結果表示用モーダル */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.85); z-index: 2000; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px;
         }
-        .modal-content { background: var(--bg); padding: 30px; border-radius: var(--radius); max-width: 90%; }
+        .modal-content { 
+            background: var(--bg); padding: 20px; border-radius: var(--radius); 
+            max-width: 100%; text-align: center;
+        }
+        .result-img { width: 100%; max-width: 370px; height: auto; margin-bottom: 20px; border: 1px solid #ddd; }
+        .hint { color: #fff; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -100,22 +107,30 @@
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
-    <button class="gen-btn" onclick="downloadStamp()">Download PNG</button>
+    <button class="gen-btn" onclick="showResult()">Create Stamp</button>
 </main>
 
 <footer>
     <div class="footer-links">
         <a href="https://ko-fi.com/afrorakda" target="_blank">☕️buy me a coffee</a>
-        <a href="javascript:void(0)" onclick="openModal()">Privacy Policy</a>
+        <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>
     </div>
     <div class="copyright">No login / No tracking / No ads / Browser only<br>afrorakda © 2026</div>
 </footer>
 
-<div id="privacyModal" class="modal" onclick="closeModal()">
+<div id="resultModal" class="modal" onclick="closeModal('resultModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <img id="resultImg" class="result-img" src="" alt="Stamp Result">
+        <button class="gen-btn" onclick="closeModal('resultModal')">Close</button>
+    </div>
+    <p class="hint">画像を長押しして保存してください</p>
+</div>
+
+<div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>Privacy Policy</h3>
         <p>No login. No tracking. No ads. Browser only.<br>Local processing.</p>
-        <button class="gen-btn" onclick="closeModal()">Close</button>
+        <button class="gen-btn" onclick="closeModal('privacyModal')">Close</button>
     </div>
 </div>
 
@@ -128,7 +143,6 @@
     function draw() {
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const rectW = 340;
@@ -137,7 +151,6 @@
         const y = (canvas.height - rectH) / 2;
         const radius = 15;
 
-        // 1. 外枠 (重厚なメイン線)
         ctx.strokeStyle = '#333333';
         ctx.lineWidth = 6;
         ctx.fillStyle = '#ffffff';
@@ -146,58 +159,46 @@
         ctx.fill();
         ctx.stroke();
 
-        // 2. 内枠 (デザインの締まりを出す細線)
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.roundRect(x + 10, y + 10, rectW - 20, rectH - 20, radius - 5);
         ctx.stroke();
 
-        // 3. 四隅のネジ止め風アクセント (インダストリアル感)
         const dotSize = 3;
         const offset = 18;
         ctx.fillStyle = '#333333';
         [[x+offset, y+offset], [x+rectW-offset, y+offset], [x+offset, y+rectH-offset], [x+rectW-offset, y+rectH-offset]].forEach(pos => {
-            ctx.beginPath();
-            ctx.arc(pos[0], pos[1], dotSize, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(pos[0], pos[1], dotSize, 0, Math.PI * 2); ctx.fill();
         });
 
         ctx.textAlign = 'center';
-
-        // 4. 日本語 (あえて少しだけウェイトを落として品を出す)
         let jaFontSize = 48;
-        ctx.font = `600 ${jaFontSize}px "Hiragino Mincho ProN", "serif"`; // 明朝系で知的に
+        ctx.font = `600 ${jaFontSize}px serif`;
         while (ctx.measureText(jaText).width > rectW - 60 && jaFontSize > 20) {
-            jaFontSize -= 2;
-            ctx.font = `600 ${jaFontSize}px serif`;
+            jaFontSize -= 2; ctx.font = `600 ${jaFontSize}px serif`;
         }
         ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -8 : 15));
 
-        // 5. 英語 (太く、短く、ラベルのように)
         if (enText) {
             let enFontSize = 16;
             ctx.font = `900 ${enFontSize}px sans-serif`;
-            ctx.letterSpacing = "4px"; // 文字間を広くしてモダンに
+            ctx.letterSpacing = "4px";
             while (ctx.measureText(enText).width > rectW - 80 && enFontSize > 10) {
-                enFontSize -= 1;
-                ctx.font = `900 ${enFontSize}px sans-serif`;
+                enFontSize -= 1; ctx.font = `900 ${enFontSize}px sans-serif`;
             }
             ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
         }
     }
 
-    function downloadStamp() {
-        const link = document.createElement('a');
-        link.download = `stamp_${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+    function showResult() {
+        const dataUrl = canvas.toDataURL('image/png');
+        document.getElementById('resultImg').src = dataUrl;
+        document.getElementById('resultModal').style.display = 'flex';
     }
 
     function clearInput(id) {
         const el = document.getElementById(id);
-        el.value = '';
-        toggleClr(el);
-        draw();
+        el.value = ''; toggleClr(el); draw();
     }
 
     function toggleClr(el) {
@@ -206,14 +207,11 @@
     }
 
     [jaInput, enInput].forEach(el => {
-        el.addEventListener('input', () => {
-            toggleClr(el);
-            draw();
-        });
+        el.addEventListener('input', () => { toggleClr(el); draw(); });
     });
 
-    function openModal() { document.getElementById('privacyModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('privacyModal').style.display = 'none'; }
+    function openPrivacy() { document.getElementById('privacyModal').style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     window.onload = draw;
 </script>
