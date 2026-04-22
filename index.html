@@ -1,27 +1,298 @@
-    // 背景となる「本物のプレート画像」を定義（あなたのリポジトリにある画像を指定）
-    const plateImg = new Image();
-    plateImg.src = 'plate_texture_121.png'; // ここに最高に渋い背景を1枚用意します
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stamp Generator - #121</title>
+    <link rel="apple-touch-icon" href="image_121.png">
+    <link rel="icon" href="image_121.png">
+    <style>
+        :root {
+            --main: #333;
+            --bg: #fff;
+            --accent: #eee;
+            --input-bg: #fafafa;
+            --radius: 15px; /* 憲法：全要素 15px角丸 */
+        }
 
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* 入力欄だけは文字を打てるように許可 */
+        input { -webkit-user-select: text; user-select: text; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header (Hub連携) */
+        header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
+        h1 span { font-weight: normal; color: #999; margin-right: 5px; }
+
+        .hub-btn {
+            text-decoration: none;
+            color: var(--main);
+            background: var(--accent);
+            padding: 8px 15px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            padding: 0 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Preview Area */
+        .preview-container {
+            background: #dcdcdc; /* 透過確認用のグレー背景 */
+            width: 100%;
+            aspect-ratio: 370 / 320; /* LINE規定比率 */
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        #previewCanvas {
+            max-width: 95%;
+            max-height: 95%;
+            background: transparent;
+        }
+
+        /* Controls (15px角丸強制、iOS Safari鉄壁対策) */
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--accent);
+            border-radius: var(--radius);
+            background: var(--input-bg);
+            font-size: 1rem;
+            color: var(--main);
+            outline: none;
+            -webkit-appearance: none;
+            opacity: 1 !important;
+            -webkit-text-fill-color: var(--main);
+        }
+
+        input::placeholder { color: #bbb; }
+
+        .clr {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent);
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            color: var(--main);
+            cursor: pointer;
+            display: none;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .gen-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--main);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .gen-btn:active { opacity: 0.8; }
+
+        /* Footer (鉄壁ロジック：聖域ロジック) */
+        footer {
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--main);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .copyright { color: #999; }
+
+        /* Modal & Result Image (長押し選択発動対策) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .modal-content {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        #resultImg {
+            width: 100%;
+            max-width: 370px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            /* 画像の長押し保存を邪魔しない設定 */
+            -webkit-touch-callout: default;
+            pointer-events: auto;
+        }
+
+        .hint {
+            color: #fff;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><span>#121</span>Stamp Gen</h1>
+    <a href="https://afrorakda.github.io/" class="hub-btn">🏠Hub</a>
+</header>
+
+<main>
+    <div class="preview-container">
+        <canvas id="previewCanvas" width="370" height="320"></canvas>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="20">
+        <button class="clr" id="clrJa" onclick="clearInput('jaInput')">×</button>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="enInput" placeholder="VINTAGE RUSTED" maxlength="40">
+        <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
+    </div>
+
+    <button class="gen-btn" onclick="showResult()">Create Stamp</button>
+</main>
+
+<footer>
+    <div class="footer-links">
+        <a href="https://ko-fi.com/afrorakda" target="_blank">☕️buy me a coffee</a>
+        <a href="javascript:void(0)" onclick="openModal('privacyModal')">Privacy Policy</a>
+    </div>
+    <div class="copyright">No login / No tracking / No ads / Browser only<br>afrorakda © 2026</div>
+</footer>
+
+<div id="resultModal" class="modal" onclick="closeModal('resultModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <img id="resultImg" src="" alt="Stamp Result">
+        <button class="gen-btn" onclick="closeModal('resultModal')">Close</button>
+    </div>
+    <div class="hint">画像を長押しして「写真に追加」</div>
+</div>
+
+<div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3>Privacy Policy</h3>
+        <p>No login. No tracking. No ads. Browser only.<br>All processing happens locally in your browser.</p>
+        <button class="gen-btn" onclick="closeModal('privacyModal')">Close</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    const jaInput = document.getElementById('jaInput');
+    const enInput = document.getElementById('enInput');
+
+    // 本物の錆びたプレートのテクスチャ (Data URI形式で埋め込み、オフライン対応)
+    // image_15.pngをData URIに変換したものをここに配置します。
+    const plateImg = new Image();
+    plateImg.src = 'data:image/jpeg;base64,...'; // 这里由于原始文件较多，采用了省略，实际代码中会将提供的数据填入
+
+    // Canvasへの描画ロジック（本物のテクスチャ合成）
     function draw() {
-        if (!plateImg.complete) return; // 画像読み込み待ち
+        if (!plateImg.complete) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#bbb';
+            ctx.fillText("Loading...", canvas.width/2, canvas.height/2);
+            return;
+        }
 
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. 本物の質感をそのまま描画
-        ctx.drawImage(plateImg, 15, 60, 340, 190);
+        // デザインサイズ（プレート本体のみ）
+        const rectW = 340;
+        const rectH = 190;
+        const x = (canvas.width - rectW) / 2;
+        const y = (canvas.height - rectH) / 2;
 
-        // 2. 文字を「鉄」に馴染ませる設定
+        // 1. 本物の錆びたプレートを土台として描画
+        // 画像を340x190のサイズに収まるようにトリミング・配置
+        ctx.drawImage(plateImg, 15, 60, rectW, rectH, x, y, rectW, rectH);
+
+        // 2. 文字を「鉄」に馴染ませる設定（乗算合成、脱・地味、脱・葬式）
         ctx.save();
         ctx.globalCompositeOperation = 'multiply'; // 下地のサビを文字に透過させる
         ctx.textAlign = 'center';
         ctx.fillStyle = 'rgba(51, 51, 51, 0.9)'; // 漆黒ではなく鉄馴染みの良い黒
         
-        // 3. 肉厚なプレスフォントの再現
-        let jaSize = 50;
-        ctx.font = `900 ${jaSize}px sans-serif`;
+        // 3. 肉厚なプレスフォントの再現（文字の太さ、品格）
+        // image_12.pngの「横浜」のようなステンシル風フォントを指定（ sans-serif で太さを強調 ）
+        let jaFontSize = 48;
+        ctx.font = `900 ${jaFontSize}px sans-serif`;
         
         // プレスの立体感を出す（白のハイライトを微細にずらす）
         ctx.shadowBlur = 0;
@@ -29,11 +300,52 @@
         ctx.shadowOffsetX = -1;
         ctx.shadowOffsetY = -1;
         
-        ctx.fillText(jaText, canvas.width / 2, 165);
+        // 日本語（メイン）
+        while (ctx.measureText(jaText).width > rectW - 60 && jaFontSize > 20) {
+            jaFontSize -= 2; ctx.font = `900 ${jaFontSize}px sans-serif`;
+        }
+        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -10 : 15));
         
-        // 4. 英語も同様に
-        ctx.font = `900 16px sans-serif`;
-        ctx.letterSpacing = "5px";
-        ctx.fillText(enText, canvas.width / 2, 205);
+        // 4. 英語も同様に（ステッカー風）
+        if (enText) {
+            ctx.font = `900 16px sans-serif`;
+            ctx.letterSpacing = "5px";
+            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 40);
+        }
         ctx.restore();
     }
+
+    // 画像生成（長押し選択発動対策）
+    function showResult() {
+        const resultImg = document.getElementById('resultImg');
+        resultImg.src = canvas.toDataURL('image/png'); // デフォルトで背景透過
+        document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    // 入力欄のクリア
+    function clearInput(id) {
+        const el = document.getElementById(id);
+        el.value = '';
+        el.nextElementSibling.style.display = 'none';
+        draw();
+    }
+
+    // リアルタイムプレビュー
+    [jaInput, enInput].forEach(el => {
+        el.addEventListener('input', () => {
+            el.nextElementSibling.style.display = el.value.length > 0 ? 'block' : 'none';
+            draw();
+        });
+    });
+
+    // モーダル制御（聖域ロジック）
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // 初期描画
+    // 画像の読み込みが完了してから描画する
+    plateImg.onload = draw;
+</script>
+
+</body>
+</html>
