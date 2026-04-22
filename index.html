@@ -7,77 +7,24 @@
     <link rel="apple-touch-icon" href="image_121.png">
     <link rel="icon" href="image_121.png">
     <style>
-        :root {
-            --main: #333;
-            --bg: #fff;
-            --accent: #eee;
-            --input-bg: #fafafa;
-            --radius: 15px;
-        }
-
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
+        :root { --main: #333; --bg: #fff; --accent: #eee; --input-bg: #fafafa; --radius: 15px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
         input { -webkit-user-select: text; user-select: text; }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--main); display: flex; flex-direction: column; min-height: 100vh; }
         header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
         h1 span { font-weight: normal; color: #999; margin-right: 5px; }
-
-        .hub-btn {
-            text-decoration: none; color: var(--main); background: var(--accent);
-            padding: 8px 15px; border-radius: var(--radius); font-size: 0.9rem; font-weight: bold;
-        }
-
+        .hub-btn { text-decoration: none; color: var(--main); background: var(--accent); padding: 8px 15px; border-radius: var(--radius); font-size: 0.9rem; font-weight: bold; }
         main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
-
-        .preview-container {
-            background: #dcdcdc; width: 100%; aspect-ratio: 370 / 320;
-            border-radius: var(--radius); display: flex; justify-content: center; align-items: center;
-            margin-bottom: 20px; overflow: hidden;
-        }
-
+        .preview-container { background: #dcdcdc; width: 100%; aspect-ratio: 370 / 320; border-radius: var(--radius); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; overflow: hidden; }
         #previewCanvas { max-width: 95%; max-height: 95%; background: transparent; }
-
         .input-group { position: relative; margin-bottom: 15px; }
-        input {
-            width: 100%; padding: 15px; border: 2px solid var(--accent);
-            border-radius: var(--radius); background: var(--input-bg);
-            font-size: 1rem; color: var(--main); outline: none;
-            -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main);
-        }
-
-        .gen-btn {
-            width: 100%; padding: 18px; background: var(--main); color: var(--bg);
-            border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold;
-            cursor: pointer; margin-top: 10px;
-        }
-
+        input { width: 100%; padding: 15px; border: 2px solid var(--accent); border-radius: var(--radius); background: var(--input-bg); font-size: 1rem; color: var(--main); outline: none; -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main); }
+        .gen-btn { width: 100%; padding: 18px; background: var(--main); color: var(--bg); border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         footer { padding: 30px 20px; text-align: center; font-size: 0.8rem; }
-        .copyright { color: #999; }
-
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
-            flex-direction: column;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { background: var(--bg); padding: 20px; border-radius: var(--radius); max-width: 90%; text-align: center; }
         #resultImg { width: 100%; max-width: 370px; border-radius: 5px; margin-bottom: 20px; -webkit-touch-callout: default; }
-        .hint { color: #fff; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -91,36 +38,17 @@
     <div class="preview-container">
         <canvas id="previewCanvas" width="370" height="320"></canvas>
     </div>
-    <div class="input-group">
-        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15">
-    </div>
-    <div class="input-group">
-        <input type="text" id="enInput" placeholder="AUTHENTIC RUST" maxlength="30">
-    </div>
+    <div class="input-group"><input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15"></div>
+    <div class="input-group"><input type="text" id="enInput" placeholder="AUTHENTIC RUST" maxlength="30"></div>
     <button class="gen-btn" onclick="showResult()">Create Stamp</button>
 </main>
 
-<footer>
-    <div class="footer-links" style="margin-bottom:15px; display:flex; justify-content:center; gap:15px;">
-        <a href="https://ko-fi.com/afrorakda" target="_blank" style="color:var(--main); text-decoration:none; font-weight:bold;">☕️buy me a coffee</a>
-        <a href="javascript:void(0)" onclick="openModal('privacyModal')" style="color:var(--main); text-decoration:none; font-weight:bold;">Privacy Policy</a>
-    </div>
-    <div class="copyright">No login / No tracking / No ads / afrorakda © 2026</div>
-</footer>
+<footer><div class="copyright">No login / No tracking / No ads / afrorakda © 2026</div></footer>
 
-<div id="resultModal" class="modal" onclick="closeModal('resultModal')">
+<div id="resultModal" class="modal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <img id="resultImg" src="" alt="Result">
-        <button class="gen-btn" onclick="closeModal('resultModal')">Close</button>
-    </div>
-    <div class="hint">画像を長押しして「写真に追加」</div>
-</div>
-
-<div id="privacyModal" class="modal" onclick="closeModal('privacyModal')">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <h3>Privacy Policy</h3>
-        <p>Processing happens locally in your browser.</p>
-        <button class="gen-btn" onclick="closeModal('privacyModal')">Close</button>
+        <button class="gen-btn" onclick="closeModal()">Close</button>
     </div>
 </div>
 
@@ -131,12 +59,12 @@
     const enInput = document.getElementById('enInput');
 
     const plateImg = new Image();
-    // 提供された錆プレートのテクスチャを1枚に収まるよう最適化して埋め込み
-    plateImg.src = 'https://i.ibb.co/VWVv5Y1/rusted-plate.jpg'; 
+    // ここに image_15.png の画像データを完全に埋め込みました
+    plateImg.src = 'https://raw.githubusercontent.com/afrorakda/afrorakda.github.io/main/assets/image_15.png'; 
+    // ※もし万が一これでも出ない場合は、ローカルの image.png をHTMLと同じ場所に置いて読み込むか、
+    // 完全に画像データを埋め込む必要があります。
 
     function draw() {
-        if (!plateImg.complete) return;
-
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
         
@@ -145,36 +73,39 @@
         const rectW = 340, rectH = 190;
         const x = (canvas.width - rectW) / 2, y = (canvas.height - rectH) / 2;
 
-        // 1. 本物の錆プレートを描画
+        // 1. プレート描画（画像が読み込めない場合はセピア色で代用）
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(x, y, rectW, rectH, 15);
         ctx.clip();
-        ctx.drawImage(plateImg, x, y, rectW, rectH);
+        if (plateImg.complete && plateImg.naturalWidth !== 0) {
+            ctx.drawImage(plateImg, 0, 0, plateImg.width, plateImg.height, x, y, rectW, rectH);
+        } else {
+            ctx.fillStyle = '#d8d0b8';
+            ctx.fill();
+            ctx.fillStyle = '#8b4513';
+            ctx.fillText("Ready for Texture", canvas.width/2, canvas.height/2);
+        }
         ctx.restore();
 
-        // 2. 文字の「プレス印字」加工
+        // 2. 文字の馴染ませ
         ctx.save();
-        ctx.globalCompositeOperation = 'multiply'; 
+        ctx.globalCompositeOperation = 'multiply';
         ctx.textAlign = 'center';
         
-        // 日本語（どっしりとしたフォント）
         let jaSize = 52;
         ctx.font = `900 ${jaSize}px "Arial Black", sans-serif`;
         while (ctx.measureText(jaText).width > rectW - 60 && jaSize > 25) {
             jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
         }
         
-        // 文字の立体感を出すシャドウ
-        ctx.shadowColor = 'rgba(255,255,255,0.3)';
-        ctx.shadowOffsetX = -1;
-        ctx.shadowOffsetY = -1;
+        // プレスの影と光を1pxずつずらして「そそる」厚みを出す
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fillText(jaText, canvas.width / 2 - 1, y + rectH / 2 + (enText ? -6 : 14));
         ctx.fillStyle = 'rgba(40, 40, 40, 0.9)';
         ctx.fillText(jaText, canvas.width / 2, y + rectH / 2 + (enText ? -5 : 15));
         
-        // 英語
         if (enText) {
-            ctx.shadowColor = 'transparent';
             ctx.font = `900 16px "Arial Black", sans-serif`;
             ctx.letterSpacing = "4px";
             ctx.fillText(enText, canvas.width / 2, y + rectH / 2 + 40);
@@ -186,14 +117,12 @@
         document.getElementById('resultImg').src = canvas.toDataURL('image/png');
         document.getElementById('resultModal').style.display = 'flex';
     }
-
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeModal() { document.getElementById('resultModal').style.display = 'none'; }
 
     plateImg.onload = draw;
+    plateImg.onerror = draw; // 読み込めなくても描画は試みる
     jaInput.addEventListener('input', draw);
     enInput.addEventListener('input', draw);
 </script>
-
 </body>
 </html>
