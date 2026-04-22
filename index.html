@@ -4,22 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Stamp Generator</title>
-    <link rel="apple-touch-icon" href="image_121.png">
-    <link rel="icon" href="image_121.png">
     <style>
         :root { --main: #333; --bg: #fff; --accent: #eee; --radius: 15px; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
-        input { -webkit-user-select: text; user-select: text; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--main); display: flex; flex-direction: column; min-height: 100vh; }
         header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
-        .hub-btn { text-decoration: none; color: var(--main); background: var(--accent); padding: 8px 15px; border-radius: var(--radius); font-size: 0.9rem; font-weight: bold; }
         main { flex: 1; padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; }
-        .preview-container { background: #bbb; width: 100%; aspect-ratio: 370 / 320; border-radius: var(--radius); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; overflow: hidden; }
+        .preview-container { background: #bbb; width: 100%; aspect-ratio: 370 / 320; border-radius: var(--radius); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
         #previewCanvas { max-width: 95%; max-height: 95%; }
-        .input-group { position: relative; margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; border: 2px solid var(--accent); border-radius: var(--radius); background: #fafafa; font-size: 1rem; color: var(--main); outline: none; -webkit-appearance: none; opacity: 1 !important; -webkit-text-fill-color: var(--main); }
-        .gen-btn { width: 100%; padding: 18px; background: var(--main); color: var(--bg); border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        input { width: 100%; padding: 15px; border: 2px solid var(--accent); border-radius: var(--radius); background: #fafafa; font-size: 1rem; color: var(--main); margin-bottom: 15px; outline: none; -webkit-appearance: none; }
+        .gen-btn { width: 100%; padding: 18px; background: var(--main); color: var(--bg); border: none; border-radius: var(--radius); font-size: 1rem; font-weight: bold; cursor: pointer; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { background: var(--bg); padding: 20px; border-radius: var(--radius); max-width: 90%; text-align: center; }
         #resultImg { width: 100%; max-width: 370px; border-radius: 5px; -webkit-touch-callout: default; }
@@ -28,21 +23,15 @@
 </head>
 <body>
 
-<header>
-    <h1>#121 Stamp Gen</h1>
-    <a href="https://afrorakda.github.io/" class="hub-btn">🏠Hub</a>
-</header>
+<header><h1>#121 Stamp Gen</h1></header>
 
 <main>
-    <div class="preview-container">
-        <canvas id="previewCanvas" width="370" height="320"></canvas>
-    </div>
-    <div class="input-group"><input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15"></div>
-    <div class="input-group"><input type="text" id="enInput" placeholder="OFFICIAL" maxlength="30"></div>
+    <div class="preview-container"><canvas id="previewCanvas" width="370" height="320"></canvas></div>
+    <input type="text" id="jaInput" placeholder="文字を入力" maxlength="15">
     <button class="gen-btn" onclick="showResult()">Create Stamp</button>
 </main>
 
-<footer>afrorakda © 2026</footer>
+<footer>No login / No tracking / afrorakda © 2026</footer>
 
 <div id="resultModal" class="modal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
@@ -54,67 +43,36 @@
 <script>
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
+    const jaInput = document.getElementById('jaInput');
+
+    // あなたが用意した「最高の錆び画像」を読み込むための設定
+    const plateImg = new Image();
+    plateImg.src = 'image.png'; // 同じフォルダに画像を置けば読み込まれます
 
     function draw() {
-        const jaText = document.getElementById('jaInput').value || "承知いたしました";
-        const enText = (document.getElementById('enInput').value || "OFFICIAL").toUpperCase();
+        const text = jaInput.value || "文字を入力";
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const w = 340, h = 190, x = (370-w)/2, y = (320-h)/2, r = 15;
-
-        // 1. プレートベース（セピア）
-        ctx.fillStyle = '#cfc6b0';
-        ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
-
-        // 2. リアル錆アルゴリズム（不規則な浸食）
-        ctx.save();
-        ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.clip();
-        
-        for(let i=0; i<800; i++) {
-            const rx = x + Math.random()*w;
-            const ry = y + Math.random()*h;
-            const dist = Math.min(rx-x, x+w-rx, ry-y, y+h-ry);
-            // 縁に錆を集中
-            if (dist < 15 || Math.random() < 0.04) {
-                const size = Math.random()*12;
-                const grad = ctx.createRadialGradient(rx, ry, 0, rx, ry, size);
-                grad.addColorStop(0, 'rgba(93, 46, 10, 0.8)');
-                grad.addColorStop(1, 'rgba(139, 69, 19, 0)');
-                ctx.fillStyle = grad;
-                ctx.beginPath(); ctx.arc(rx, ry, size, 0, Math.PI*2); ctx.fill();
-            }
-        }
-        ctx.restore();
-
-        // 3. プレスの「盛り上がり」縁取り
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.roundRect(x+3, y+3, w-6, h-6, r-3); ctx.stroke();
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-        ctx.beginPath(); ctx.roundRect(x+5, y+5, w-10, h-10, r-5); ctx.stroke();
-
-        // 4. テキスト（鉄板刻印風）
-        ctx.textAlign = 'center';
-        let jaSize = 50;
-        ctx.font = `900 ${jaSize}px "Arial Black", sans-serif`;
-        while (ctx.measureText(jaText).width > w - 60) {
-            jaSize -= 2; ctx.font = `900 ${jaSize}px sans-serif`;
+        // 1. 画像の描画（読み込めない場合は薄いグレー）
+        if (plateImg.complete && plateImg.naturalWidth !== 0) {
+            ctx.drawImage(plateImg, 15, 65, 340, 190);
+        } else {
+            ctx.fillStyle = '#eee';
+            ctx.beginPath(); ctx.roundRect(15, 65, 340, 190, 15); ctx.fill();
         }
 
+        // 2. 文字の描画（乗算合成で馴染ませる）
         ctx.save();
         ctx.globalCompositeOperation = 'multiply';
-        // 刻印の影
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.fillText(jaText, 185 - 1, y + h/2 + (enText ? -6 : 14));
-        // メイン文字
-        ctx.fillStyle = 'rgba(40, 40, 40, 0.95)';
-        ctx.fillText(jaText, 185, y + h/2 + (enText ? -5 : 15));
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(51, 51, 51, 0.85)';
+        ctx.font = '900 48px sans-serif';
         
-        if (enText) {
-            ctx.font = `900 16px "Arial Black", sans-serif`;
-            ctx.letterSpacing = "4px";
-            ctx.fillText(enText, 185, y + h/2 + 40);
-        }
+        // プレスの厚み出し（ハイライト）
+        ctx.shadowColor = 'rgba(255,255,255,0.4)';
+        ctx.shadowOffsetX = -1; ctx.shadowOffsetY = -1;
+        
+        ctx.fillText(text, 185, 175);
         ctx.restore();
     }
 
@@ -123,8 +81,9 @@
         document.getElementById('resultModal').style.display = 'flex';
     }
     function closeModal() { document.getElementById('resultModal').style.display = 'none'; }
-    document.getElementById('jaInput').addEventListener('input', draw);
-    document.getElementById('enInput').addEventListener('input', draw);
+    
+    plateImg.onload = draw;
+    jaInput.addEventListener('input', draw);
     window.onload = draw;
 </script>
 </body>
