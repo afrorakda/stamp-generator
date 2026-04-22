@@ -12,7 +12,7 @@
             --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
-            --radius: 15px; /* 憲法：全要素 15px角丸 */
+            --radius: 15px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,7 +27,6 @@
             min-height: 100vh;
         }
 
-        /* Header */
         header {
             padding: 20px;
             display: flex;
@@ -35,7 +34,6 @@
             align-items: center;
         }
 
-        /* 開発番号 #121 を反映 */
         h1 { font-size: 1.2rem; margin: 0; font-weight: 900; }
         h1 span { font-weight: normal; color: #999; margin-right: 5px; }
 
@@ -49,7 +47,6 @@
             font-weight: bold;
         }
 
-        /* Main Container */
         main {
             flex: 1;
             padding: 0 20px;
@@ -58,32 +55,29 @@
             width: 100%;
         }
 
-        /* Preview Area */
         .preview-container {
-            background: #ccc; /* 透過確認用のグレー背景 */
+            background: #d0d0d0; /* 透過が見やすい少し濃い目のグレー */
             width: 100%;
-            aspect-ratio: 370 / 320; /* LINE規定比率 */
+            aspect-ratio: 370 / 320;
             border-radius: var(--radius);
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 20px;
-            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
         }
 
         #previewCanvas {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 90%;
+            max-height: 90%;
             background: transparent;
         }
 
-        /* Controls */
         .input-group {
             position: relative;
             margin-bottom: 15px;
         }
 
-        /* iOS Safari鉄壁対策含む入力エリア */
         input {
             width: 100%;
             padding: 15px;
@@ -114,12 +108,11 @@
             cursor: pointer;
             display: none;
             font-size: 12px;
-            line-height: 1;
         }
 
         .gen-btn {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             background: var(--main);
             color: var(--bg);
             border: none;
@@ -130,9 +123,6 @@
             margin-top: 10px;
         }
 
-        .gen-btn:active { opacity: 0.8; }
-
-        /* Footer (鉄壁ロジック：JSON成否に関わらず動く) */
         footer {
             padding: 30px 20px;
             text-align: center;
@@ -144,7 +134,6 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            flex-wrap: wrap;
         }
 
         .footer-links a {
@@ -155,7 +144,6 @@
 
         .copyright { color: #999; }
 
-        /* Modal (15px角丸強制) */
         .modal {
             display: none;
             position: fixed;
@@ -171,7 +159,6 @@
             padding: 30px;
             border-radius: var(--radius);
             max-width: 90%;
-            text-align: left;
         }
     </style>
 </head>
@@ -188,12 +175,12 @@
     </div>
 
     <div class="input-group">
-        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="15">
+        <input type="text" id="jaInput" placeholder="承知いたしました" maxlength="20">
         <button class="clr" id="clrJa" onclick="clearInput('jaInput')">×</button>
     </div>
 
     <div class="input-group">
-        <input type="text" id="enInput" placeholder="NOTED" maxlength="30">
+        <input type="text" id="enInput" placeholder="NOTED" maxlength="40">
         <button class="clr" id="clrEn" onclick="clearInput('enInput')">×</button>
     </div>
 
@@ -211,7 +198,7 @@
 <div id="privacyModal" class="modal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3>Privacy Policy</h3>
-        <p>No login. No tracking. No ads. Browser only.<br>All processing happens locally in your browser.</p>
+        <p>No login. No tracking. No ads. Browser only.<br>Local processing.</p>
         <button class="gen-btn" onclick="closeModal()">Close</button>
     </div>
 </div>
@@ -222,63 +209,59 @@
     const jaInput = document.getElementById('jaInput');
     const enInput = document.getElementById('enInput');
 
-    // Canvasへの描画ロジック（Fridge Combo UIを完全再現）
     function draw() {
         const jaText = jaInput.value || jaInput.placeholder;
         const enText = (enInput.value || enInput.placeholder).toUpperCase();
 
-        // 完全にクリア（透過状態にする）
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Fridge Comboスタイルのボックスを描画
-        const rectW = 330; // 370pxの中に収める
-        const rectH = 180;
+        // 枠のサイズ（余白を考慮）
+        const rectW = 340;
+        const rectH = 200;
         const x = (canvas.width - rectW) / 2;
         const y = (canvas.height - rectH) / 2;
-        const radius = 15; // 憲法：15px角丸
+        const radius = 15;
 
-        ctx.strokeStyle = '#333333'; // メインカラー
-        ctx.lineWidth = 8;          // 道具感を出す太めの線
-        ctx.fillStyle = '#ffffff';    // ボックス内は白
+        // ボックス描画
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 10;
+        ctx.fillStyle = '#ffffff';
 
         ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + rectW - radius, y);
-        ctx.quadraticCurveTo(x + rectW, y, x + rectW, y + radius);
-        ctx.lineTo(x + rectW, y + rectH - radius);
-        ctx.quadraticCurveTo(x + rectW, y + rectH, x + rectW - radius, y + rectH);
-        ctx.lineTo(x + radius, y + rectH);
-        ctx.quadraticCurveTo(x, y + rectH, x, y + rectH - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-        
-        ctx.fill();   // 白で塗りつぶし
-        ctx.stroke(); // #333で枠線
+        ctx.roundRect(x, y, rectW, rectH, radius);
+        ctx.fill();
+        ctx.stroke();
 
-        // テキスト描画（#333）
         ctx.fillStyle = '#333333';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle'; // 上下中央揃えの基準
-        
-        // 日本語（メイン：極太サンセリフ）
-        ctx.font = 'bold 42px sans-serif';
-        // ボックスの中央から少し上に配置
-        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) - 15);
 
-        // 英語（サブ：少し小さく、洒落感を出す）
-        ctx.font = '18px sans-serif';
-        ctx.letterSpacing = "2px"; // 文字間を広げる
-        // ボックスの中央から少し下に配置
-        ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 25);
+        // 日本語（可変サイズ調整）
+        let jaFontSize = 44;
+        ctx.font = `bold ${jaFontSize}px sans-serif`;
+        // 幅に合わせてフォントサイズを縮小
+        while (ctx.measureText(jaText).width > rectW - 40 && jaFontSize > 20) {
+            jaFontSize -= 2;
+            ctx.font = `bold ${jaFontSize}px sans-serif`;
+        }
+        ctx.fillText(jaText, canvas.width / 2, y + (rectH / 2) + (enText ? -5 : 15));
+
+        // 英語（可変サイズ調整）
+        if (enText) {
+            let enFontSize = 18;
+            ctx.font = `${enFontSize}px sans-serif`;
+            ctx.letterSpacing = "2px";
+            while (ctx.measureText(enText).width > rectW - 60 && enFontSize > 10) {
+                enFontSize -= 1;
+                ctx.font = `${enFontSize}px sans-serif`;
+            }
+            ctx.fillText(enText, canvas.width / 2, y + (rectH / 2) + 35);
+        }
     }
 
-    // 透過PNGとしてダウンロード（html2canvas不要、標準API）
     function downloadStamp() {
         const link = document.createElement('a');
-        // ファイル名にタイムスタンプを付与
         link.download = `stamp_${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png'); // デフォルトで背景透過
+        link.href = canvas.toDataURL('image/png');
         link.click();
     }
 
@@ -294,7 +277,6 @@
         btn.style.display = el.value.length > 0 ? 'block' : 'none';
     }
 
-    // リアルタイムプレビュー
     [jaInput, enInput].forEach(el => {
         el.addEventListener('input', () => {
             toggleClr(el);
@@ -302,11 +284,9 @@
         });
     });
 
-    // モーダル制御（聖域ロジック）
     function openModal() { document.getElementById('privacyModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('privacyModal').style.display = 'none'; }
 
-    // 初期描画
     window.onload = draw;
 </script>
 
